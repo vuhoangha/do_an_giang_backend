@@ -15,7 +15,7 @@ class UserInfo {
             || !this.req.body.data
             || !this.req.body.data.user_name
             || !this.req.body.data.display_name
-            || !this.req.body.data.password) this.res.sendStatus(400);
+            || !this.req.body.data.password) return this.res.sendStatus(400);
         const user = this.req.body.data.user_name;
         const password = this.req.body.data.password;
         const displayName = this.req.body.data.display_name;
@@ -41,7 +41,7 @@ class UserInfo {
             || !this.req.body
             || !this.req.body.data
             || !this.req.body.data.user_name
-            || !this.req.body.data.password) this.res.sendStatus(400);
+            || !this.req.body.data.password) return this.res.sendStatus(400);
         const user = this.req.body.data.user_name;
         const pass = this.req.body.data.password;
         const password = pass;
@@ -66,7 +66,7 @@ class UserInfo {
                     });
                 });
             });
-        })
+        });
     };
 }
 
