@@ -5,7 +5,8 @@ module.exports = {
     FIELD: {
         USER_INFO: {
             USER_NAME: 'user_name',
-            PASSWORD: 'password'
+            PASSWORD: 'password',
+            DISPLAY_NAME: 'display_name'
         }
     }
 }

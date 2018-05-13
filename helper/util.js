@@ -1,8 +1,8 @@
 const crypto = require('crypto');
 const fs = require('fs');
-const KEY = fs.readFileSync('../config/key.txt', 'utf8');
-const CERT_PRIVATE = fs.readFileSync('../config/private.key', 'utf8');
-const CERT_PUBLIC = fs.readFileSync('../config/public.crt', 'utf8');
+const KEY = fs.readFileSync('./config/key.txt', 'utf8');
+const CERT_PRIVATE = fs.readFileSync('./config/private.key', 'utf8');
+const CERT_PUBLIC = fs.readFileSync('./config/public.crt', 'utf8');
 const ALGORITHM = { algorithm: 'RS256' };
 const jwt = require('jsonwebtoken');
 
@@ -23,6 +23,11 @@ const stringifyJson = obj => {
 }
 
 const createPassword = text => {
+    if (text == null || text === '') return false;
+    return crypto.createHmac('sha256', KEY).update(text).digest('hex');
+};
+
+const decodePassword = text => {
     if (text == null || text === '') return false;
     return crypto.createHmac('sha256', KEY).update(text).digest('hex');
 };

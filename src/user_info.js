@@ -14,18 +14,20 @@ class UserInfo {
             || !this.req.body
             || !this.req.body.data
             || !this.req.body.data.user_name
-            || !this.req.body.data.password) res.sendStatus(400);
+            || !this.req.body.data.display_name
+            || !this.req.body.data.password) this.res.sendStatus(400);
         const user = this.req.body.data.user_name;
         const password = this.req.body.data.password;
-        const newPassword = util.createPassword(password);
+        const displayName = this.req.body.data.display_name;
+        const newPassword = password;
         const db = new MysqlDb();
 
         db.init(success => {
             if (!success) return this.res.sendStatus(400);
 
             const query = `INSERT INTO ${enumValue.TBL.USER_INFO} 
-                            (${enumValue.FIELD.USER_INFO.USER_NAME}, ${enumValue.FIELD.USER_INFO.PASSWORD})
-                            VALUES ('${user}', '${newPassword}');`
+                            (${enumValue.FIELD.USER_INFO.USER_NAME}, ${enumValue.FIELD.USER_INFO.PASSWORD},${enumValue.FIELD.USER_INFO.DISPLAY_NAME})
+                            VALUES ('${user}', '${newPassword}', '${displayName}');`
             db.query(query, (error, results, fields) => {
                 if (error) return this.res.sendStatus(400);
                 if (results) return this.res.sendStatus(200);
@@ -42,7 +44,7 @@ class UserInfo {
             || !this.req.body.data.password) res.sendStatus(400);
         const user = this.req.body.data.user_name;
         const pass = this.req.body.data.password;
-        const password = util.createPassword(pass);
+        const password = pass;
         const db = new MysqlDb();
 
         db.init(success => {
@@ -52,11 +54,16 @@ class UserInfo {
                 WHERE ${enumValue.FIELD.USER_INFO.USER_NAME} = '${user}' AND  ${enumValue.FIELD.USER_INFO.PASSWORD} = '${password}'`;
 
             db.query(query, (error, results, fields) => {
-                if (error) return res.sendStatus(400);
-                if (!results || results.length <= 0) return res.sendStatus(400);
+                if (error) return this.res.sendStatus(400);
+                if (!results || results.length <= 0) return this.res.sendStatus(400);
 
                 return util.signToken(user, token => {
-                    res.send(token);
+                    this.res.send({
+                        data: {
+                            token,
+                            display_name: results[0].display_name
+                        }
+                    });
                 });
             });
         })
