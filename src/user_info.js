@@ -4,43 +4,60 @@ const enumValue = require('../common/enum');
 const util = require('../helper/util');
 
 class UserInfo {
-    constructor() { }
+    constructor(req, res) {
+        this.req = req;
+        this.res = res;
+    }
 
-    register(user, password, callback) {
-        if (!user || !password || !callback) return false;
-
+    register() {
+        if (!this.req
+            || !this.req.body
+            || !this.req.body.data
+            || !this.req.body.data.user_name
+            || !this.req.body.data.password) res.sendStatus(400);
+        const user = this.req.body.data.user_name;
+        const password = this.req.body.data.password;
         const newPassword = util.createPassword(password);
         const db = new MysqlDb();
 
         db.init(success => {
-            if (!success) return callback(false);
+            if (!success) return this.res.sendStatus(400);
 
             const query = `INSERT INTO ${enumValue.TBL.USER_INFO} 
                             (${enumValue.FIELD.USER_INFO.USER_NAME}, ${enumValue.FIELD.USER_INFO.PASSWORD})
                             VALUES ('${user}', '${newPassword}');`
             db.query(query, (error, results, fields) => {
-                if (error) return callback(false);
-                if (results) return callback(true);
-                return callback(false);
+                if (error) return this.res.sendStatus(400);
+                if (results) return this.res.sendStatus(200);
+                return this.res.sendStatus(400);
             });
-        })
+        });
     };
 
-    login(user, password, callback) {
-        if (!user || !password || !callback) return false;
-
+    login() {
+        if (!this.req
+            || !this.req.body
+            || !this.req.body.data
+            || !this.req.body.data.user_name
+            || !this.req.body.data.password) res.sendStatus(400);
+        const user = this.req.body.data.user_name;
+        const pass = this.req.body.data.password;
+        const password = util.createPassword(pass);
         const db = new MysqlDb();
 
         db.init(success => {
-            if (!success) return callback(false);
+            if (!success) return this.res.sendStatus(400);
 
             const query = `SELECT * FROM ${enumValue.TBL.USER_INFO}
                 WHERE ${enumValue.FIELD.USER_INFO.USER_NAME} = '${user}' AND  ${enumValue.FIELD.USER_INFO.PASSWORD} = '${password}'`;
 
             db.query(query, (error, results, fields) => {
-                if (error) return callback(null);
-                if (results) return callback(results);
-                return callback(null);
+                if (error) return res.sendStatus(400);
+                if (!results || results.length <= 0) return res.sendStatus(400);
+
+                return util.signToken(user, token => {
+                    res.send(token);
+                });
             });
         })
     };
