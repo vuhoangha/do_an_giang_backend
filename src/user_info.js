@@ -41,7 +41,7 @@ class UserInfo {
             || !this.req.body
             || !this.req.body.data
             || !this.req.body.data.user_name
-            || !this.req.body.data.password) res.sendStatus(400);
+            || !this.req.body.data.password) this.res.sendStatus(400);
         const user = this.req.body.data.user_name;
         const pass = this.req.body.data.password;
         const password = pass;
