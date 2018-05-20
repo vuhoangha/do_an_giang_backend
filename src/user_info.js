@@ -36,6 +36,34 @@ class UserInfo {
         });
     };
 
+    update() {
+        if (!this.req
+            || !this.req.body
+            || !this.req.body.data
+            || !this.req.body.data.user_name
+            || !this.req.body.data.display_name
+            || !this.req.body.data.password) return this.res.sendStatus(400);
+        const user = this.req.body.data.user_name;
+        const password = this.req.body.data.password;
+        const displayName = this.req.body.data.display_name;
+        const newPassword = password;
+        const db = new MysqlDb();
+
+        db.init(success => {
+            if (!success) return this.res.sendStatus(400);
+
+            const query = `UPDATE ${enumValue.TBL.USER_INFO} 
+                            SET ${enumValue.FIELD.USER_INFO.PASSWORD}=${password},
+                                ${enumValue.FIELD.USER_INFO.DISPLAY_NAME}=${displayName}
+                            WHERE '${user}'=${user};`
+            db.query(query, (error, results, fields) => {
+                if (error) return this.res.sendStatus(400);
+                if (results) return this.res.sendStatus(200);
+                return this.res.sendStatus(400);
+            });
+        });
+    };
+
     login() {
         if (!this.req
             || !this.req.body

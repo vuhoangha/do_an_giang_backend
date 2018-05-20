@@ -57,6 +57,61 @@ class Car {
         });
     }
 
+    update() {
+        if (!this.req
+            || !this.req.body
+            || !this.req.body.data
+            || !this.req.headers
+            || !this.req.headers.token) this.res.sendStatus(400);
+        const data = this.req.body.data;
+
+        // check valid data
+        if (data.name == null
+            || data.producer == null
+            || data.capacity == null
+            || data.km == null
+            || data.type == null
+            || data.license_plates == null
+            || data.user_name == null
+        ) return this.res.sendStatus(400);
+
+        util.decodeToken(this.req.headers.token, payload => {
+            if (!payload.id || payload.id !== data.user_name) return this.res.sendStatus(400);
+
+            const newCar = {
+                image: data.image ? data.image : null,
+                name: data.name,
+                producer: data.producer,
+                capacity: data.capacity,
+                km: data.km,
+                type: data.type,
+                license_plates: data.license_plates,
+                user_name: data.user_name
+            };
+
+            const db = new MysqlDb();
+            db.init(success => {
+                if (!success) return this.res.sendStatus(400);
+
+                const query = `UPDATE ${enumValue.TBL.USER_CAR} 
+                             SET ${enumValue.FIELD.USER_CAR.IMAGE}='${newCar.image}',
+                                 ${enumValue.FIELD.USER_CAR.NAME}='${newCar.name}',
+                                 ${enumValue.FIELD.USER_CAR.PRODUCER}='${newCar.producer}',
+                                 ${enumValue.FIELD.USER_CAR.CAPACITY}='${newCar.capacity}',
+                                 ${enumValue.FIELD.USER_CAR.KM}=${newCar.km},
+                                 ${enumValue.FIELD.USER_CAR.TYPE}='${newCar.type}',
+                                 ${enumValue.FIELD.USER_CAR.LICENSE_PLATES}='${newCar.license_plates}',
+                                 ${enumValue.FIELD.USER_CAR.USER_NAME})='${newCar.user_name}'
+                            WHERE ${enumValue.FIELD.USER_CAR.ID_CAR})='${newCar.id_car}';`
+
+                db.query(query, (error, results, fields) => {
+                    if (error) return this.res.sendStatus(400);
+                    return this.res.sendStatus(200);
+                });
+            });
+        });
+    }
+
     getMyCar() {
         if (!this.req || !this.req.headers || !this.req.headers.token) this.res.sendStatus(400);
         const token = this.req.headers.token;
