@@ -19,7 +19,7 @@ app.post('/user_car', function (req, res) {
     const car = new Car(req, res);
     car.add();
 });
-app.post('/user_car/get-my-car', function (req, res) {
+app.get('/user_car/get-my-car', function (req, res) {
     const car = new Car(req, res);
     car.getMyCar();
 });

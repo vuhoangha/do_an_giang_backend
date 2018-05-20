@@ -12,7 +12,9 @@ class Car {
     add() {
         if (!this.req
             || !this.req.body
-            || !this.req.body.data) this.res.sendStatus(400);
+            || !this.req.body.data
+            || !this.req.headers
+            || !this.req.headers.token) this.res.sendStatus(400);
         const data = this.req.body.data;
 
         // check valid data
@@ -25,28 +27,32 @@ class Car {
             || data.user_name == null
         ) return this.res.sendStatus(400);
 
-        const newCar = {
-            image: data.image ? data.image : null,
-            name: data.name,
-            producer: data.producer,
-            capacity: data.capacity,
-            km: data.km,
-            type: data.type,
-            license_plates: data.license_plates,
-            user_name: data.user_name
-        };
+        util.decodeToken(this.req.headers.token, payload => {
+            if (!payload.id || payload.id !== data.user_name) return this.res.sendStatus(400);
 
-        const db = new MysqlDb();
-        db.init(success => {
-            if (!success) return this.res.sendStatus(400);
+            const newCar = {
+                image: data.image ? data.image : null,
+                name: data.name,
+                producer: data.producer,
+                capacity: data.capacity,
+                km: data.km,
+                type: data.type,
+                license_plates: data.license_plates,
+                user_name: data.user_name
+            };
 
-            const query = `INSERT INTO ${enumValue.TBL.USER_CAR} 
+            const db = new MysqlDb();
+            db.init(success => {
+                if (!success) return this.res.sendStatus(400);
+
+                const query = `INSERT INTO ${enumValue.TBL.USER_CAR} 
                             (${enumValue.FIELD.USER_CAR.IMAGE}, ${enumValue.FIELD.USER_CAR.NAME},${enumValue.FIELD.USER_CAR.PRODUCER},${enumValue.FIELD.USER_CAR.CAPACITY},${enumValue.FIELD.USER_CAR.KM},${enumValue.FIELD.USER_CAR.TYPE},${enumValue.FIELD.USER_CAR.LICENSE_PLATES},${enumValue.FIELD.USER_CAR.USER_NAME})
-                            VALUES ('${newCar.image}', '${newCar.name}', '${newCar.producer}', '${newCar.capacity}', '${newCar.capacity}', '${newCar.km}', '${newCar.type}', '${newCar.license_plates}', '${newCar.user_name}');`;
+                            VALUES ('${newCar.image}', '${newCar.name}', '${newCar.producer}', '${newCar.capacity}', ${newCar.km}, '${newCar.type}', '${newCar.license_plates}', '${newCar.user_name}');`;
 
-            db.query(query, (error, results, fields) => {
-                if (error) return this.res.sendStatus(400);
-                return this.res.sendStatus(200);
+                db.query(query, (error, results, fields) => {
+                    if (error) return this.res.sendStatus(400);
+                    return this.res.sendStatus(200);
+                });
             });
         });
     }
@@ -57,13 +63,18 @@ class Car {
         util.decodeToken(token, payload => {
             if (!payload || !payload.id) this.res.sendStatus(400);
             const userName = payload.id;
-            const query = `SELECT * FROM ${enumValue.TBL.USER_CAR}
+
+            const db = new MysqlDb();
+            db.init(success => {
+                if (!success) return this.res.sendStatus(400);
+                const query = `SELECT * FROM ${enumValue.TBL.USER_CAR}
                   WHERE ${enumValue.FIELD.USER_CAR.USER_NAME} = '${userName}'`;
 
-            db.query(query, (error, results, fields) => {
-                if (error) return this.res.sendStatus(400);
-                return this.res.send({
-                    data: results
+                db.query(query, (error, results, fields) => {
+                    if (error) return this.res.sendStatus(400);
+                    return this.res.send({
+                        data: results
+                    });
                 });
             });
         });

@@ -61,7 +61,8 @@ class UserInfo {
                     this.res.send({
                         data: {
                             token,
-                            display_name: results[0].display_name
+                            display_name: results[0].display_name,
+                            user_name: results[0].user_name,
                         }
                     });
                 });

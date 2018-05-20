@@ -3,7 +3,7 @@ const fs = require('fs');
 const KEY = fs.readFileSync('./config/key.txt', 'utf8');
 const CERT_PRIVATE = fs.readFileSync('./config/private.key', 'utf8');
 const CERT_PUBLIC = fs.readFileSync('./config/public.crt', 'utf8');
-const ALGORITHM = { algorithm: 'RS256' };
+const OPTION = { algorithm: 'RS256', expiresIn: 60 * 60 * 24 * 1000 };
 const jwt = require('jsonwebtoken');
 
 const parseJson = str => {
@@ -34,7 +34,7 @@ const decodePassword = text => {
 
 const signToken = (username, cb) => {
     if (!username || !cb) return console.error(`signToken fail with username: ${username}`);
-    jwt.sign({ id: username }, CERT_PRIVATE, ALGORITHM, function (err, token) {
+    jwt.sign({ id: username }, CERT_PRIVATE, OPTION, function (err, token) {
         if (err) return console.error(`error with ${stringifyJson(err)}`);
         cb(token);
     });
@@ -42,8 +42,7 @@ const signToken = (username, cb) => {
 
 const decodeToken = (token, cb) => {
     if (!token || !cb) return console.error(`signToken fail with token: ${token}`);
-    var cert = fs.readFileSync('public.pem'); // get public key
-    jwt.verify(token, CERT_PUBLIC, ALGORITHM, function (err, payload) {
+    jwt.verify(token, CERT_PUBLIC, OPTION, function (err, payload) {
         if (err) return console.error(`error with ${stringifyJson(err)}`);
         cb(payload);
     });
